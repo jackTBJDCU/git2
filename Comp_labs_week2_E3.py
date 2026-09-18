@@ -43,6 +43,7 @@ for h in h_list:
         y = y + dy * h
         t = t + h
         T_v.append(t)
+  
         X_v.append(x)
         
 # Exact solution
@@ -54,6 +55,7 @@ for h in h_list:
 
 ax1.plot(T_exact_fine, X_exact_fine, 'k--', linewidth=2, label="exact sin(t)")
 
+ax1.set_xlabel("t")
 ax1.set_ylabel("x")
 ax1.set_title(f"Euler method E3 : divergence with step size (t-max={tmax})")
 ax1.legend(loc='upper left',fontsize = 7.8)
