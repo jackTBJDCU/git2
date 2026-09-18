@@ -27,14 +27,13 @@ for x0 in x0_v:
         X_v.append(x)
     plt.plot(T_v, X_v, label=f"x0 = {x0}")
 
-plt.plot([0, tmax], [0, tmax], 'k--', label="x = t")
 plt.xlabel("t")
 plt.ylabel("x")
 plt.title(f"Euler method, h = {h}, tmax = {tmax}")
 plt.legend()
 plt.show()
 
-# --- Part 2: longer times ---
+#Part 2 longer times
 for tmax in [50, 100, 500, 1000]:
     plt.figure()
     for x0 in x0_v:
@@ -54,7 +53,7 @@ for tmax in [50, 100, 500, 1000]:
     plt.legend()
     plt.show()
 
-# --- Part 3: smaller step size ---
+#Part 3 smaller step size
 h = 0.01
 tmax = 9
 plt.figure()
@@ -75,7 +74,7 @@ plt.title(f"Euler method, h = {h}, tmax = {tmax}")
 plt.legend()
 plt.show()
 
-#part 4
+#Part 4 
 tmax_large = 50
 x0 = 1
 h = 0.05
@@ -90,12 +89,6 @@ for i in range(10):
         t += h
         T_v.append(t)
         X_v.append(x)
-    if prev is not None:
-        n = min(len(prev[1]), len(X_v))
-        diff = np.max(np.abs(np.array(prev[1][:n]) - np.array(X_v[:n])))
-        print(f"h = {h:.6f}, max diff vs previous = {diff}")
-        if diff < 1e-3:
-            print("Converged.")
-            break
+        
     prev = (T_v, X_v)
     h /= 2
