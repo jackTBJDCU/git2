@@ -35,7 +35,7 @@ for i in range(len(N_v)):
     diff.append(N_exact[i] - N_v[i])
 
 
-ax1.plot(T_v, N_v, "o-", label="Euler")
+ax1.plot(T_v, N_v, label="Euler",linewidth=3.0)
 ax1.plot(T_v, N_exact, "k--", label="Exact")
 ax1.set_xlabel("t")
 ax1.set_ylabel("Euler Approximation N(t)",fontsize = 10)

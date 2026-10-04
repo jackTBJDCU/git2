@@ -30,7 +30,7 @@ x0 = 0
 v0 = 1
 y0 = np.array([x0,v0])
 t0 = 0
-tf = 50
+tf = 100
 i = 10000
 b = 0.1
 ω0 = 1.0
@@ -48,8 +48,8 @@ t = result.t
 
 #fig one left 
 
-ax1.plot(t,x,"r",label = "x (RK45)")
-ax1.plot(t,v,"blue",label = "v (RK45)")
+ax1.plot(t,x,"r",label = "x ")
+ax1.plot(t,v,"blue",label = "v ")
 ax1.set_xlabel("t")
 ax1.set_ylabel("x, v")
 ax1.set_title(f"Damped harmonic oscillator: x0={x0}, v0={v0}, b={b}, \u03c9,0={ω0}")
@@ -57,7 +57,7 @@ ax1.legend()
 
 #fig 1 right
 
-ax2.plot(x, v, 'k', label = "RK45")
+ax2.plot(x, v, 'k')
 ax2.axis('equal')
 ax2.set_xlabel("x")
 ax2.set_ylabel("v")
@@ -80,9 +80,9 @@ phase_space(x,v)
 #different values for b in damped sho
 
 b_sets = [
-    (0.1, "underdamped, b=0.1"),
-    (2.0, "critically damped, b=2.0"),
-    (5.0, "overdamped, b=5.0"),
+    (0.1, "b=0.1"),
+    (2.0, "b=2.0"),
+    (5.0, "b=5.0"),
 ]
 
 fig2, (ax1, ax2) = plt.subplots(1, 2,)

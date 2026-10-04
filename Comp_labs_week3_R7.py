@@ -45,10 +45,10 @@ for bs in b:
 
     driving_f, amps = placeholder_amplitudes(ω0, bs, A, y0, tf)
     
-    ax.plot(driving_f, amps, '-'=label = rf"$b={b}$")
+    ax.plot(driving_f, amps, '-',label = rf"$b={b}$")
     print(f"the count is {i}")
     i = 1 + i
-           label=rf"$b={b}$")
+    label=rf"$b={b}$"
 ax.set_xlabel(r"Driving frequency $\omega_d$")
 ax.set_ylabel("Steady-state amplitude")
 ax.set_title(rf"Resonance curve: $A={A}$, $b={b}$, $\omega_0={ω0}$")

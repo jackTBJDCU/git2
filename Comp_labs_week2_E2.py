@@ -41,7 +41,7 @@ ax.legend()
 #Part 2 longer times
 
 axes2 = [ax1, ax2]
-for tmax_i, ax_i in zip([50, 100, 500, 1000], [ax1[0], ax1[1], ax2[0], ax2[1]]):
+for tmax_i, ax_i in zip([50, 100, 500, 900], [ax1[0], ax1[1], ax2[0], ax2[1]]):
     for x0 in x0_v:
         t = 0.0
         x = x0
@@ -74,7 +74,7 @@ for x0 in x0_v:
     ax5.plot(T_v, X_v, label=f"x0 = {x0}")
 ax5.set_xlabel("t",fontsize = 14)
 ax5.set_ylabel("x",fontsize = 14)
-ax5.set_title(f"Euler method, h = {h}, tmax = {tmax}",fontsize = 14)
+ax5.set_title(f"Euler method, h = {h}, Tmax = {tmax}",fontsize = 14)
 ax5.legend(fontsize = 14)
 
 #part 4

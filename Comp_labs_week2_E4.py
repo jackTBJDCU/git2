@@ -49,10 +49,9 @@ ax1.plot(T_exact_fine,X_exact_fine,'k--', linewidth=2,label = "Exact" ,color = "
 ax1.legend()
 ax1.set_xlabel("t")
 ax1.set_ylabel("x")
-ax1.set_title("Modfied Euler equation")
+ax1.set_title("Modified Euler Approximation of the SHO Compared with the Exact Solution x=sin(t)")
 
 ax2.legend()
 ax2.set_xlabel("t")
 ax2.set_ylabel("x")
-ax2.set_title("Error vs exact solution")
 plt.show()

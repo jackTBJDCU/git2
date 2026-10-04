@@ -1,127 +1,113 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep 22 12:34:24 2026
-
-@author: boris
-"""
-import numpy as np 
-from scipy.integrate import solve_ivp
+import numpy as np
 import matplotlib.pyplot as plt
-from pathlib import Path
+from scipy.integrate import solve_ivp
 
-def simple_pendulum(t, y):
-    x, v = y  # extracts the x and v values from the tuple
-    dydt = np.array([v, -x])  # generates an array with the rates of change: dxdt = v, dvdt = -x
-    return dydt  # returns the array
 
-def phase_space(x,v,tit = "phase space diagram of x and v"):
-    plt.figure()
-    plt.plot(v, x, 'g',label = "X v V")
-    plt.axis('equal')
-    plt.xlabel("v")
-    plt.ylabel("x")
-    plt.title(tit)
-    plt.legend()
-    plt.show()
-def exact_pendlumx(t):
-    x = x0*np.cos(t) + (v0 * np.sin(t))
-    return x
-def exact_pendlumv(t):
-    x = (-x0 * np.sin(t)) + (v0 * np.cos(t))
-    return x
-
-fig, (ax1, ax2) = plt.subplots(1, 2,)
-fig.set_size_inches(14, 6)
-x0 = 0
-v0 = 1
-y0 = np.array([x0,v0])
-t0 = 0
-tf = 30
-i = 10000
-
-t = np.linspace(t0, tf, i)
-
-x_f = [x0]
-v_f = [v0]
-
-result = solve_ivp(fun=simple_pendulum,t_span=(t0, tf),y0=y0,method="RK45",t_eval=t)
-
-x, v = result.y
-t = result.t
-
-#fig one left 
-
-ax1.plot(t,x,"r",label = "x (RK45)")
-ax1.plot(t,v,"blue",label = "v (RK45)")
-ax1.plot(t,exact_pendlumx(t),"--g",label = "exact x = sin(t)")
-ax1.plot(t,exact_pendlumv(t),"--m",label = "exact v = cos(t)")
-ax1.set_xlabel("t")
-ax1.set_ylabel("x, v")
-ax1.set_title(f"Simple harmonic oscillator: x0={x0}, v0={v0}")
-ax1.legend()
-
-#fig 1 right
-
-ax2.plot(x, v, 'k', label = "RK45")
-ax2.axis('equal')
-ax2.set_xlabel("x")
-ax2.set_ylabel("v")
-ax2.set_title("Phase space: x vs v")
-ax2.legend()
-
-plt.tight_layout()
-out_dir = Path.home() / "documents"
-out_dir.mkdir(parents=True, exist_ok=True)
-out_file = out_dir / f"R3_sho_x0_{x0}_v0_{v0}.png"
-plt.savefig(out_file, dpi=150)
-print(f"Saved figure to: {out_file}")
-
-plt.show()
-
-#fig 2 standard and diffrence phase space
-phase_space(x,v)
-phase_space(x -exact_pendlumx(t), v -exact_pendlumv(t),tit = "the phase diagram of \u0394 x and \u0394 v")
-
-#diffrent values for omage in sho
-
-def simple_pendulum_ω(t, y, omeg0=1.0):
+def sho(t, y):
     x, v = y
-    dydt = np.array([v, -omeg0**2 * x])
-    return dydt
+    return [v, -x]
 
-param_sets = [
-    (0.0, 1.0, 1.0, "standard: x=sin(t)"),
-    (1.0, 0.0, 1.0, "x0=1, v0=0 -> x=cos(t)"),
-    (0.0, 1.0, 2.0, "\u03c9,0=2 -> double frequency"),
-    (0.0, 1.0, 0.5, "\u03c9,0=0.5 -> half frequency"),
-    (0.0, 0.0, 1.0, "x0=v0=0 -> stays at origin"),
+
+t_max = 30.0
+t_eval = np.linspace(0, t_max, 2000)
+y0 = [0.0, 1.0]
+
+sol = solve_ivp(sho, (0, t_max), y0, t_eval=t_eval, rtol=1e-9, atol=1e-12)
+
+x_num = sol.y[0]
+v_num = sol.y[1]
+t = sol.t
+x_exact = np.sin(t)
+v_exact = np.cos(t)
+
+
+fig1, (axL, axR) = plt.subplots(1, 2, figsize=(11, 7))
+axL.plot(t, x_num, color='red', lw=2, label=r'$x(t)$')
+axL.plot(t, v_num, color='blue', lw=2, label=r'$v(t)$')
+axL.plot(t, x_exact, 'k--', lw=1, label=r'exact $x=\sin(t)$')
+axL.plot(t, v_exact, 'g--', lw=1, label=r'exact $v=\cos(t)$')
+axL.set_xlabel('time  t  (s)')
+axL.set_ylabel('x(t),  v(t)')
+axL.set_title('(a) Time dependence')
+axL.legend(loc='upper right', fontsize=8, framealpha=0.9)
+
+axR.plot(x_num, v_num, color='green', lw=1.8, label='orbit')
+axR.set_xlabel('x')
+axR.set_ylabel('v')
+axR.set_title('(b) Phase space')
+axR.set_aspect('equal')
+axR.legend(loc='upper right')
+
+fig1.suptitle(f'Simple harmonic oscillator (x0=0, v0=1, t_max={t_max:g})',
+              fontsize=17)
+fig1.tight_layout(rect=[0, 0, 1, 0.95])
+fig1.savefig('R3_fig1_combined.png', dpi=150)
+
+
+def integrate(x0, v0, omega0, t_max=30.0, n=2000):
+    def deriv(t, y):
+        x, v = y
+        return [v, -(omega0**2) * x]
+    te = np.linspace(0, t_max, n)
+    s = solve_ivp(deriv, (0, t_max), [x0, v0], t_eval=te,
+                  rtol=1e-9, atol=1e-12)
+    return s.t, s.y[0], s.y[1]
+
+
+cases = [
+    (r'$\omega_0=1,\ x_0=0,\ v_0=1$', 0.0, 1.0, 1.0, 'tab:blue'),
+    (r'$\omega_0=1,\ x_0=1,\ v_0=0$', 1.0, 0.0, 1.0, 'tab:orange'),
+    (r'$\omega_0=2$',               0.0, 1.0, 2.0, 'tab:green'),
+    (r'$\omega_0=0.5$',               0.0, 1.0, 0.5, 'tab:red'),
+    (r'$x_0=v_0=0$ ',              0.0, 0.0, 1.0, 'tab:purple'),
 ]
 
-fig2, (ax1, ax2) = plt.subplots(1, 2,)
-fig2.set_size_inches(14, 6)
+fig2, (axL, axR) = plt.subplots(1, 2, figsize=(12, 7))
+for label, x0, v0, w0, colour in cases:
+    tt, xx, vv = integrate(x0, v0, w0)
+    axL.plot(tt, xx, color=colour, lw=1.8, label=label)
+    if x0 == 0 and v0 == 0:
+        axR.plot(xx, vv, 'o', color=colour, ms=6, label=label)
+    else:
+        axR.plot(xx, vv, color=colour, lw=1.8, label=label)
 
-for xp0, vp0, ω, lbl in param_sets:
-    res_p = solve_ivp(fun=lambda tt, yy: simple_pendulum_ω(tt, yy, ω),
-                      t_span=(t0, tf), y0=[xp0, vp0],
-                      method="RK45", t_eval=t,
-                      rtol=1e-10, atol=1e-12)
-    xp, vp = res_p.y
-    ax1.plot(res_p.t, xp, label = lbl)
-    ax2.plot(xp, vp, label = lbl)
+axL.set_xlabel('time  t  (s)')
+axL.set_ylabel('x(t)')
+axL.set_title(r'(a) x(t) for different initial conditions / $\omega_0$')
+axL.legend(loc='upper right', framealpha=0.9)
 
-ax1.set_xlabel("t")
-ax1.set_ylabel("x")
-ax1.set_title("x(t) for different initial conditions / \u03c9")
-ax1.legend(fontsize=8)
+axR.set_xlabel('x')
+axR.set_ylabel('v')
+axR.set_title('(b) Phase space for different parameters')
+axR.set_aspect('equal')
+axR.legend(loc='upper right', framealpha=0.9)
 
-ax2.set_xlabel("x")
-ax2.set_ylabel("v")
-ax2.set_title("Phase space for different parameters")
-ax2.axis('equal')
-ax2.legend(fontsize=8)
+fig2.suptitle('Parameter exploration of the simple harmonic oscillator',
+              fontsize=16)
+fig2.tight_layout(rect=[0, 0, 1, 0.95])
+fig2.savefig('R3_fig2_parameter_study.png', dpi=150)
 
-plt.tight_layout()
-out_file2 = out_dir / "R3_sho_parameter_exploration.png"
-plt.savefig(out_file2, dpi=150)
-print(f"Saved figure to: {out_file2}")
+
+dx = x_num - x_exact
+dv = v_num - v_exact
+
+fig3, (axL, axR) = plt.subplots(1, 2, figsize=(11, 7))
+axL.plot(t, dx, color='crimson', lw=1.8, label=r'$\Delta x$')
+axL.plot(t, dv, color='royalblue', lw=1.8, label=r'$\Delta v$')
+axL.set_xlabel('time  t  (s)')
+axL.set_ylabel(r'$\Delta x,\ \Delta v$')
+axL.set_title('(a) Residual vs time')
+axL.legend(loc='upper right', fontsize=8, framealpha=0.9)
+
+axR.plot(dx, dv, color='darkgreen', lw=1.5, label='RK45 - exact')
+axR.set_xlabel(r'$\Delta x = x_{\rm num} - x_{\rm exact}$')
+axR.set_ylabel(r'$\Delta v = v_{\rm num} - v_{\rm exact}$')
+axR.set_title('(b) Residual phase space')
+axR.set_aspect('equal')
+axR.legend(loc='upper right', fontsize=8)
+
+fig3.suptitle('RK45 residual against the exact solution', fontsize=12)
+fig3.tight_layout(rect=[0, 0, 1, 0.95])
+fig3.savefig('R3_fig3_residual.png', dpi=150)
+
 plt.show()

@@ -57,10 +57,10 @@ ax1.plot(T_exact_fine, X_exact_fine, 'k--', linewidth=2, label="exact sin(t)")
 
 ax1.set_xlabel("t")
 ax1.set_ylabel("x")
-ax1.set_title(f"Euler method E3 : divergence with step size (t-max={tmax})")
+ax1.set_title(f"Simple Harmonic Oscillator: Convergence of the Euler Method with Varying Step Size h")
 ax1.legend(loc='upper left',fontsize = 7.8)
 
 ax2.set_xlabel("t")
-ax2.set_ylabel("x_num - x_exact")
+ax2.set_ylabel("x_h - x_exact")
 ax2.legend()
 plt.show()

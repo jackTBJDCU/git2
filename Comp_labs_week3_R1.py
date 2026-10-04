@@ -14,7 +14,7 @@ def f(t,y):
     return dydt
 
 fig, (ax) = plt.subplots(1, 1,)
-fig.set_size_inches(10, 9)  
+fig.set_size_inches(14, 8)  
 a_f = [1,10,100]
 b_f = [1,10]
 y0 = np.array([0])
@@ -29,10 +29,11 @@ for a in a_f:
         results = solve_ivp(fun=f,t_span=(t0,tf),y0=y0,t_eval=t,method="RK45")
         y = results.y[0]
         t = results.t
-        ax.plot(t, y, label=f"a = {a} b = {b}")
+        ax.plot(t, y,".", label=f"a = {a} b = {b}")
+        ax.plot(t, y,"--",c="black",alpha = 0.6)
 ax.set_xlabel("t")
 ax.set_ylabel("y")
-ax.set_title("Runge-Kutta RK45 solution of dy/dt = -a y³ + b sin(t)")
+ax.set_title("Runge-Kutta RK45 solution of dy/dt = -ay³ + b in(t)")
 plt.legend()
 plt.show()
          
