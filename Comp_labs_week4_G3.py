@@ -25,8 +25,8 @@ def main():
               dxdt[::skip, ::skip], dvdt[::skip, ::skip],
               color='white', alpha=0.5, scale=30)
 
-    ax.set_xlabel('position  x')
-    ax.set_ylabel('velocity  v')
+    ax.set_xlabel('x')
+    ax.set_ylabel('v')
     ax.set_title(f'SHO phase space ($\\omega$ = {omega}, b = {b})')
     plt.colorbar(cf, ax=ax, label='Energy E')
 
@@ -57,13 +57,13 @@ def main():
 
     plt.tight_layout()
     plt.show()
-    #fig2
-    b_values = [0.0, 0.3, 1.0, 2.0, 4.0]
+    
+    # fig2
+    b_values = [0.0, 0.3, 1.0, 4.0]
     omega = 1.0
     
-    fig, axes = plt.subplots(1, len(b_values),
-                             figsize=(4 * len(b_values), 5),
-                             sharey=True)
+    fig, axes = plt.subplots(2, 2,figsize=(10, 10),sharey=True)
+    axes = axes.flatten()
     
     for i in range(len(b_values)):
         b = b_values[i]
@@ -79,22 +79,30 @@ def main():
         def damped(t, state, b=b):
             x_, v_ = state
             return [v_, -b * v_ - omega**2 * x_]
-    
-        sol = solve_ivp(damped, (0, 20), [2, 0],
+        init = [-2,1]
+        
+        sol = solve_ivp(damped, (0, 20), init,
                         t_eval=np.linspace(0, 20, 1000), method='RK45')
         ax.plot(sol.y[0], sol.y[1], color='red', linewidth=1.8)
-    
+        ax.plot(init[0],init[1], 'ro', markersize=9,
+                 label=f'fixed point ({init})')
+
         ax.axhline(0, color='black', linewidth=0.5)
         ax.axvline(0, color='black', linewidth=0.5)
+        ax.legend(loc="upper center")
         ax.set_xlabel('x')
         ax.set_title(f'b = {b}')
-        
     
-    axes[0].set_ylabel('velocity  v')
+    axes[0].set_ylabel('  v')
+    axes[2].set_ylabel('  v')
+    
     plt.suptitle(f'Damped SHO: effect of damping b ($\\omega$ = {omega})',
                  fontsize=13)
     plt.tight_layout()
+
     plt.show()
+#fig3
+
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
@@ -121,7 +129,7 @@ def main():
         ax.plot(sol.y[0], sol.y[1], color='darkred', linewidth=1.8)
 
         ax.streamplot(x, v, dxdt, dvdt, density=1.0,
-                      color='grey', linewidth=0.5, arrowsize=1.0)
+                      color='black', linewidth=0.5, arrowsize=1.0)
 
         ax.axhline(0, color='black', linewidth=0.5)
         ax.axvline(0, color='black', linewidth=0.5)

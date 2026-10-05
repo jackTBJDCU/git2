@@ -26,7 +26,7 @@ def main():
 
     plt.quiver(x_s, y_s, vx_s, vy_s,
                pivot='mid',
-               scale=100,   # tune this so arrows aren't too long
+               scale=100,
                label='$V_x = \\cos(x)\\,y$,  $V_y = \\sin(x)\\,x$')
     plt.legend()
     plt.show()

@@ -1,148 +1,144 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Mon Oct  5 09:42:30 2026
 
+@author: boris
+"""
 import numpy as np
-from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-from pathlib import Path
+from scipy.integrate import solve_ivp
+from matplotlib.ticker import MultipleLocator
 
-def driven_pendulum(t, y, b, ω0, ωd, A):
-    """RHS of the driven damped harmonic oscillator."""
-    x, v = y
-    dxdt = v
-    dvdt = -b * v - ω0**2 * x - A * np.sin(ωd * t)
-    return np.array([dxdt, dvdt])
 
-def phase_space(x, v, tit="Phase space diagram of x and v"):
-    plt.figure(figsize=(6, 6))
-    plt.plot(x, v, 'g', label="x vs v")
-    plt.axis('equal')
-    plt.xlabel("x")
-    plt.ylabel("v")
-    plt.title(tit)
-    plt.legend()
-    plt.grid(True)
+def vdp(t, state):
+    x, y = state
+    return [y, -x + (1 - x**2) * y]
+
+
+def main():
+    plt.close()
+
+    coords = np.linspace(-4, 4, 101)
+    X, Y = np.meshgrid(coords, coords)
+
+    dXdt = Y
+    dYdt = -X + (1 - X**2) * Y
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.set_aspect('equal')
+
+    speed = np.sqrt(dXdt**2 + dYdt**2)
+    strm = ax.streamplot(X, Y, dXdt, dYdt,
+                         density=1.5,
+                         color=speed, cmap='plasma',
+                         linewidth=0.8, arrowsize=1.0)
+
+    skip = 5
+    ax.quiver(X[::skip, ::skip], Y[::skip, ::skip],
+              dXdt[::skip, ::skip], dYdt[::skip, ::skip],
+              color='white', alpha=0.4, scale=30)
+
+    plt.colorbar(strm.lines, ax=ax, label='speed')
+
+    x_iso = np.linspace(-4, 4, 400)
+    ax.plot(x_iso, np.zeros_like(x_iso), 'k--', linewidth=1.2,
+            label='x-isocline (y=0)')
+
+    x_nonzero = x_iso[np.abs(x_iso) > 1e-6]
+    ax.plot(x_nonzero, x_nonzero / (1 - x_nonzero**2),
+            'w--', linewidth=1.2, label='y-isocline')
+
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_title('Van der Pol: vector field and isoclines')
+    ax.legend(loc='upper right', fontsize=8)
+    ax.xaxis.set_major_locator(MultipleLocator(1))
+    ax.yaxis.set_major_locator(MultipleLocator(1))
+
+    plt.tight_layout()
+    plt.show()
+
+    initial_conditions = [
+        (3, 3),
+        (-2, 2),
+        (0.1, 0.1),
+        (0.5, 1),
+        (2.5, -2),
+        (-3, -1),
+    ]
+
+    t_span = (0, 30)
+    t_eval = np.linspace(0, 30, 3000)
+
+    fig, axes = plt.subplots(len(initial_conditions), 2,
+                             figsize=(12, 2.5 * len(initial_conditions)),
+                             sharex='col')
+
+    for i in range(len(initial_conditions)):
+        x0 = initial_conditions[i][0]
+        y0 = initial_conditions[i][1]
+
+        sol = solve_ivp(vdp, t_span, [x0, y0],
+                        t_eval=t_eval, method='RK45',
+                        rtol=1e-8, atol=1e-10)
+
+        ax = axes[i, 0]
+        ax.plot(sol.t, sol.y[0], linewidth=1.5, label='x(t)')
+        ax.plot(sol.t, sol.y[1], linewidth=1.5, label='y(t)')
+        ax.set_ylabel('value')
+        ax.set_title(f'Time series: (x0, y0) = ({x0}, {y0})', fontsize=10)
+        ax.legend(loc='upper right', fontsize=8)
+
+        ax = axes[i, 1]
+        ax.plot(sol.y[0], sol.y[1], linewidth=1.5, color='crimson')
+        ax.plot(x0, y0, 'go', markersize=8, label='start')
+        ax.set_ylabel('y')
+        ax.set_title(f'Phase: (x0, y0) = ({x0}, {y0})', fontsize=10)
+        ax.set_aspect('equal')
+        ax.legend(loc='upper right', fontsize=8)
+
+    axes[-1, 0].set_xlabel('time  t')
+    axes[-1, 1].set_xlabel('x')
+
+    plt.suptitle('Van der Pol oscillator: time series and phase portraits',
+                 fontsize=13)
+    plt.tight_layout()
+    plt.show()
+
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.set_aspect('equal')
+
+    t_span_long = (0, 50)
+    t_eval_long = np.linspace(0, 50, 5000)
+
+    for i in range(len(initial_conditions)):
+        x0 = initial_conditions[i][0]
+        y0 = initial_conditions[i][1]
+
+        sol = solve_ivp(vdp, t_span_long, [x0, y0],
+                        t_eval=t_eval_long, method='RK45',
+                        rtol=1e-8, atol=1e-10)
+
+        ax.plot(sol.y[0], sol.y[1], linewidth=1.5, label=f'({x0}, {y0})')
+
+    ax.plot(x_iso, np.zeros_like(x_iso), 'k--', linewidth=1.0,
+            alpha=0.6, label='x-isocline')
+    ax.plot(x_nonzero, x_nonzero / (1 - x_nonzero**2),
+            'grey', linestyle='--', linewidth=1.0,
+            alpha=0.6, label='y-isocline')
+
+    ax.axhline(0, color='black', linewidth=0.5)
+    ax.axvline(0, color='black', linewidth=0.5)
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_title('Van der Pol: all trajectories converge to the limit cycle')
+    ax.legend(loc='upper right', fontsize=8)
+    ax.xaxis.set_major_locator(MultipleLocator(1))
+    ax.yaxis.set_major_locator(MultipleLocator(1))
+
     plt.tight_layout()
     plt.show()
 
 
-
-x0, v0 = 0.0, 1.0
-y0 = np.array([x0, v0])
-t0, tf = 0.0, 50.0
-i = 10000
-t_eval = np.linspace(t0, tf, i)
-b0 = 0.1
-ω0 = 1.2
-ωd = 1.0
-A = 0.1
-
-common_tol = dict(method="RK45", rtol=1e-10, atol=1e-12)
-
-# Output directory
-out_dir = Path.home() / "documents"
-out_dir.mkdir(parents=True, exist_ok=True)
-
-
-
-# Fig 1
-
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-
-result = solve_ivp(
-    fun=lambda tt, yy: driven_pendulum(tt, yy, b0, ω0, ωd, A),
-    t_span=(t0, tf), y0=y0, t_eval=t_eval, **common_tol
-)
-x, v = result.y
-
-ax1.plot(result.t, x, "r", label="x (RK45)")
-ax1.plot(result.t, v, "blue", label="v (RK45)")
-ax1.set_xlabel("Time t (s)")
-ax1.set_ylabel("x, v")
-ax1.set_title(
-    f"Driven damped oscillator\n"
-    rf"$x_0={x0}$, $v_0={v0}$, $b={b0}$, $\omega_0={ω0}$, "
-    rf"$\omega_d={ωd}$, $A={A}$"
-)
-ax1.legend()
-
-ax2.plot(x, v, 'k', label="RK45")
-ax2.axis('equal')
-ax2.set_xlabel("x")
-ax2.set_ylabel("v")
-ax2.set_title("Phase space: x vs v")
-ax2.legend()
-
-plt.tight_layout()
-out_file = out_dir / f"R6_single_b{b0}_w0_{ω0}_wd_{ωd}_A_{A}.png"
-plt.savefig(out_file, dpi=150)
-print(f"Saved figure to: {out_file}")
-plt.show()
-
-
-# Fi 2 damping
-phase_space(x, v, tit=f"Phase space: b={b0}, ω0={ω0}, ωd={ωd}, A={A}")
-
-b_sets = [
-    (0.1, "underdamped, b=0.1"),
-    (2 * ω0, f"critically damped, b={2*ω0:.1f}"),
-    (10.0, "overdamped, b=5.0"),
-]
-
-fig2, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-
-for bp, lbl in b_sets:
-    res_p = solve_ivp(
-        fun=lambda tt, yy: driven_pendulum(tt, yy, bp, ω0, ωd, A),
-        t_span=(t0, tf), y0=y0, t_eval=t_eval, **common_tol
-    )
-    xp, vp = res_p.y
-    ax1.plot(res_p.t, xp, label=lbl)
-    ax2.plot(xp, vp, label=lbl)
-
-ax1.set_xlabel("Time t (s)")
-ax1.set_ylabel("x")
-ax1.set_title(rf"$x(t)$ for different damping regimes ($\omega_0={ω0}$)")
-ax1.legend(fontsize=9)
-
-ax2.set_xlabel("x")
-ax2.set_ylabel("v")
-ax2.set_title("Phase space for different damping regimes")
-ax2.axis('equal')
-ax2.legend(fontsize=9)
-
-plt.tight_layout()
-out_file2 = out_dir / "R6_dho_damping_regimes.png"
-plt.savefig(out_file2, dpi=150)
-print(f"Saved figure to: {out_file2}")
-plt.show()
-
-
-# Fig 3resonance curves
-omega_d_vals = np.linspace(0.5, 1.5, 200)
-b_res = [0.05, 0.1, 0.2, 0.5, 1.0]
-
-plt.figure(figsize=(10, 6))
-
-for b_scan in b_res:
-    amplitudes = []
-    for wd in omega_d_vals:
-        sol = solve_ivp(
-            fun=driven_pendulum, t_span=(t0, tf), y0=y0,
-            t_eval=t_eval, args=(b_scan, ω0, wd, A), **common_tol
-        )
-        x_ss = sol.y[0]
-        amplitudes.append(x_ss.max() - x_ss.min())
-    plt.plot(omega_d_vals, amplitudes, 'o-', markersize=3,
-             label=rf"$b = {b_scan}$")
-
-plt.axvline(ω0, color='k', linestyle=':', alpha=0.5,
-            label=rf"$\omega_0 = {ω0}$")
-plt.xlabel(r"Driving frequency $\omega_d$")
-plt.ylabel("Steady-state amplitude")
-plt.title(rf"Resonance curves, $A={A}$, $\omega_0={ω0}$")
-plt.legend()
-plt.tight_layout()
-out_file3 = out_dir / "R6_resonance_curves.png"
-plt.savefig(out_file3, dpi=150)
-print(f"Saved figure to: {out_file3}")
-plt.show()
+if __name__ == '__main__':
+    main()
