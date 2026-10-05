@@ -1,0 +1,392 @@
+\documentclass[12pt,a4paper]{article}
+%
+% Load some useful latex packages:
+\usepackage{amssymb}	%Mathematical symbols of the American Mathematical Society
+\usepackage{amsmath}	%Additional Math functions by the AMS
+\usepackage[pdftex]{graphicx}   %Enable inclusion of external figure and image files
+\usepackage[pdftex,dvipsnames]{color}%Enable macros to alter text colour
+\usepackage[a4paper,margin=2.5cm]{geometry}	
+%Easier interface to define margins and page size
+\usepackage{siunitx}	%Macros to type numbers and units in SI conform notation
+\usepackage{lmodern}	%Use  modernised latex fonts instead of default
+% Some minor tweaks of default layout
+\usepackage{booktabs}
+%table
+\renewcommand{\topfraction}{.85}		%More space for figures on top of page
+\renewcommand{\bottomfraction}{.85}	    %More space for figures on bottom of page
+\renewcommand{\textfraction}{.15}		%Allow for large figures
+\usepackage{caption}        %Easier way to create distiguishable figure captions
+\captionsetup[figure]{format=hang,font={singlespacing},labelfont={bf,it,small},textfont={it},justification=RaggedRight}
+\captionsetup[table]{format=hang,font={singlespacing},labelfont={bf,it},textfont={it},justification=RaggedRight}
+\usepackage{hyperref}
+
+\newcounter{refpoint}
+\newcommand{\refpoint}[1]{%
+	\refstepcounter{refpoint}%
+	\therefpoint%
+	\label{#1}%
+}
+%hyper text ref for git
+\usepackage{subcaption}
+%for splicing sub-figures
+% HERE IS THE ACTUAL CONTENT 
+
+\begin{document}
+	\title{\includegraphics[width=6cm]{dcu.jpg}\\[1cm]Labreport \\ \textbf{Graphical Methods}}
+	\author{Report by: \textbf{Jack Johnston}\\
+		Student number: \textbf{38775}}
+	\date{\today}
+	\maketitle
+	\section*{Abstract}
+	This experiment used plotting methods from Python's Matplotlib library to visualize 2D vector fields through quiver, contour, and streamline plots. The analysis covered a few differential equations, including the Simple Harmonic Oscillator, the Verhulst population model, the Lotka-Volterra predator-prey equations, and the Van der Pol limit cycle. Numerical solutions were obtained using the Runge-Kutta method to generate time and phase-space plots. The results were analyzed to identify stable and unstable fixed points and to observe periodic oscillations in predator-prey populations. The findings demonstrate how different graphical techniques provides insight into the predictive behavior of dynamic systems.
+	\clearpage
+	\section*{Introduction}
+	To so 
+	\section{Background and Theory}
+	
+	Many physical systems are described by differential equations that cannot be solved analytically.
+	Numerical methods are required to approximate the solution. This report uses the Euler method, the modified Euler method, and the Runge Kutta (RK4) method.
+	\subsection*{Euler Method}
+	The Euler method approximates the solution by cutting off the Taylor series after the first order term.
+	For radioactive decay, the number of particles \(N(t)\) is estimated by \(\frac{dN}{dt} = -\frac{N}{\tau}\), leading to the Euler approximation:
+	\begin{equation}
+		N(t + \Delta t) = N(t) - \frac{N(t) \Delta t}{\tau}
+		\label{Euler_method}
+	\end{equation}
+	where \(\tau\) is the mean lifetime and \(\Delta t\) is the step size. The exact solution is:
+	\begin{equation}
+		N(t) = N_0\exp(-t/\tau)
+		\label{actualdecay}
+	\end{equation}
+	\subsection*{Modified Euler Method}
+	The modified Euler method improves accuracy by averaging the slope at the beginning and end of each step:
+	\begin{equation}
+		x_{n+1} = x_n + \frac{h}{2}\left[f(x_n,t_n) + f(x^{\text{init}}_{n+1},t_{n+1})\right]
+		\label{modified_euler}
+	\end{equation}
+	\(x^{\text{init}}_{n+1} = x_n + h f(x_n,t_n)\). This reduces the error.
+	
+	\subsection*{Runge Kutta Method (RK4)}
+	The Runge Kutta method evaluates the slope at four points and takes a weighted average:
+	\begin{equation}
+		x_{n+1} = x_n + \frac{h}{6}(k_1 + 2k_2 + 2k_3 + k_4)
+		\label{RK4}
+	\end{equation}
+	RK4 was used via SciPy's \texttt{solve\_ivp}.
+	
+	\subsection*{Physical Systems}
+	\textbf{Resistor-Inductor Circuit:}
+	For a series RL circuit, the current \(I(t)\) satisfies:
+	\begin{equation}
+		L\frac{dI}{dt} = V - RI
+		\label{RL_ode}
+	\end{equation}
+	The exact solution for \(I(0)=0\) is:
+	\begin{equation}
+		I(t) = \frac{V}{R}\left(1 - e^{-Rt/L}\right)
+		\label{I(t)exact}
+	\end{equation}
+	An RL circuit is a series circuit containing a resistor and an inductor. the inductor causing the current to rise exponentially toward a steady state value with time constant \(\tau = L/R\).
+	
+	
+	\textbf{Simple Harmonic Oscillator (SHO):} The undamped oscillator is described by:
+	\begin{equation}
+		\frac{d^2x}{dt^2} + \omega_0^2 x = 0
+		\label{SHO}
+	\end{equation}
+	This splits into two coupled equations: \(\frac{dx}{dt} = v\) and \(\frac{dv}{dt} = -\omega_0^2 x\). For \(\omega_0 = 1\), \(x(0)=0\), \(v(0)=1\), the exact solution is \(x(t) = \sin(t)\).
+	
+	\textbf{Damped Harmonic Oscillator:} Including a damping term gives:
+	\begin{equation}
+		\frac{d^2x}{dt^2} + b\frac{dx}{dt} + \omega_0^2 x = 0
+		\label{damped}
+	\end{equation}
+	
+	The system is underdamped if \(b < 2\omega_0\), critically damped if \(b = 2\omega_0\), and overdamped if \(b > 2\omega_0\).
+	
+	\textbf{Driven Harmonic Oscillator:} Adding a sinusoidal driving force gives:
+	\begin{equation}
+		\frac{d^2x}{dt^2} + b\frac{dx}{dt} + \omega_0^2 x = A\sin(\omega_d t)
+		\label{driven}
+	\end{equation}
+	Resonance occurs when the driving frequency \(\omega_d \approx \omega_0\).
+	Smaller damping \(b\) gives a sharper resonance peak.
+	\clearpage
+	\section{Experimental Design and Procedure}
+	All used code can be found in the git2 repository at
+	\href{https://github.com/jackTBJDCU/git2}{gitmain}
+	(\url{https://github.com/jackTBJDCU/git2})~[\refpoint{git-main}].
+	\paragraph{}
+	Programs E1-E4 were written in Python on Spyder to solve first order and coupled first order ODEs using the Euler and modified Euler methods.
+	Programs R1-R8 used SciPy's \texttt{solve\_ivp} (RK45) to solve ODEs and harmonic oscillators. NumPy, Matplotlib, and pathlib were used for arrays, plotting, and file saving.
+	an LLM was used specifically deepseek for debugging code in both python and LaTex, it was used as a reference and research tool only
+	
+	\subsection*{Program E1: Radioactive Decay}
+	Equation (\ref{actualdecay}) was solved using the approximation rule (\ref{Euler_method}). where: \(\Delta t = 0.1\), \(t_{\text{max}} = 10\), \(\tau = 2.0\), \(N_0 = 10\). A \texttt{while} loop iterated until \(t = t_{\text{max}}\), appending \(N\) and \(t\) to arrays. The result was plotted against the exact solution from equation (\ref{actualdecay}). The program was iterated with $\Delta$ t = (0.01, 0.005, 0.001), and the difference between exact and computed values was plotted.
+	
+	\subsection*{Program E2: Non-linear Example}
+	E2 was solved by defining \texttt{diff\_func(x,t) = t - x\(^2\)} and applying the Euler method with parameters: \(h = 0.05\), \(x_0 = 1\), \(t_{\text{max}} = 9\).
+	The program was re-run for \(x_0 = \{3, 1, 0, -0.7, -0.75\}\) and for \(t_{\text{max}} = \{50, 100, 500, 1000\}\). A final run used \(h = 0.01\) to demonstrate step size effects.
+	
+	\subsection*{Program E3: Coupled Equations}
+	E3 was solved using the Euler method again and applied to both variables.
+	Two functions were defined: \texttt{dx\_f} returning \(y\), and \texttt{dy\_f} \(-x\). The system was solved for an array of differing step sizes \(h\) and compared to the exact solution \(x = \sin(t)\).
+	The difference between numerical and exact solutions was plotted.
+	
+	\subsection*{Program E4: Modified Euler Method}
+	Program E3 was modified to use the predictor-corrector steps from equation (\ref{modified_euler}).
+	The same step sizes as E3 were used, and results were compared to the exact solution.
+	
+	\subsection*{Program R1: SciPy ODE Solver}
+	R1 was solved using \texttt{solve\_ivp} with \(a=1\), \(b=1\), \(y(0)=0\), and 100 steps from \(t=0\) to \(t=20\). The solution was plotted, and the program was re-run for several values of \(a\) and \(b\), listed in the legend.
+	
+	\subsection*{Program R2: RL Circuit}
+	Equation (\ref{RL_ode}) was solved using \(V = 10\,\text{V}\), \(R = 50\,\Omega\), \(L = 100\,\text{H}\), \(I(0) = 0\,\text{A}\). The numerical solution was compared with the exact solution from equation (\ref{I(t)exact}) for several step sizes \(h\). Different values of \(V\), \(R\), and \(L\) were then tested.
+	
+	\subsection*{Program R3: Harmonic Oscillator}
+	Equation (\ref{SHO}) was solved using \texttt{solve\_ivp} with \(x(0)=0\), \(v(0)=1\). The time-dependency of \(x\) and \(v\) was plotted, along with a phase space plot of \(v\) versus \(x\). Both plots were combined into a single figure using \texttt{plt.subplots()}. A second figure was then generated to analyse the effect of varying the initial conditions and the natural frequency \(\omega_0\).
+	
+	\subsection*{Program R4: Damped Harmonic Oscillator}
+	Equation (\ref{damped}) was solved using \(b = 0.1\), \(\omega_0 = 1\). Time and phase space plots were generated. The integration time was increased to determine when the oscillator came to rest. Underdamped, critically damped, and overdamped cases were tested.
+	
+	\subsection*{Program R5: Lambda Function}
+	Program R4 was modified to define the ODE system using a lambda function, allowing the solver code to remain unchanged when parameters were varied. New values of \(b\) and \(\omega_0\) were tested, and results were confirmed identical to R4.
+	
+	\subsection*{Program R6: Driven Oscillator}
+	Equation (\ref{driven}) was solved with \(A = 1\), \(b = 0.1\), \(\omega_0 = 1\). The driving frequency \(\omega_d\) was changed in a loop to investigate resonance. The damping coefficient was also varied.
+	
+	\subsection*{Program R7: Shape of the Resonance}
+	Program R6 was modified to sweep \(\omega_d\) over a wider range. The solver output only the final 20\% of the simulation to ignore transients. Maximum and minimum amplitudes were measured and plotted against \(\omega_d\) to produce a resonance curve. Different values of \(A\), \(b\), and \(\omega_0\) were tested.
+	
+	\subsection*{Program R8: Amplitude of the Resonance}
+	Program R7 was modified to loop over five damping values: \(b = \{0.05, 0.1, 0.2, 0.5, 1\}\). Five resonance curves were plotted on the same graph to show how sharpness depends on \(b\).
+	\clearpage
+	\section{Results}
+	This results section covers both the Euler method and the Runge-Kutta methods of approximation. These project codes follow from what was found in the lab manual (E1-E4 and R1-R8); to retrieve specific bodies of code, go to the cited GitHub repository~[\ref{git-main}].
+	
+	\subsection{E1}
+	Figure~\ref{fig:Euler_expodecay} shows the Euler approximation of radioactive decay for several step sizes. The error decreases as \(\Delta t\) is reduced, confirming first-order convergence.
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[width=0.9\textwidth]{E1_part_1.png}
+		\caption{\textbf{(a)} Upper: The Euler approximation of radioactive decay (\ref{Euler_method}), with the exact solution (\ref{actualdecay}) shown as a dotted line. \textbf{(b)} Lower: The difference between approximation and exact solution over time.}
+		\label{fig:Euler_expodecay}
+	\end{figure}
+	\clearpage
+	
+	\subsection{E2}
+	Figure~\ref{fig:E2_part1} shows the Euler approximation of \(x = \sqrt{t}\) converging toward the exact as \(t\) increases. Figures~\ref{fig:E2_part2}-\ref{fig:E2_part4} and Table~\ref{tab:stepsize_convergence} demonstrate divergence and eventual breakdown at large \(t_{\text{max}}\), and show that halving \(h\) reduces the error.
+	\begin{figure}[htbp]
+		\centering
+		\includegraphics[width=0.9\textwidth]{E2_part_1.png}
+		\caption{The Euler approximation of \(x = \sqrt{t}\), showing the divergence of accuracy at low initial \(t\) and its convergence as \(t\) grows larger at \(t_{\text{max}} = 9\).}
+		\label{fig:E2_part1}
+	\end{figure}
+	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=1\textwidth]{E2_part_2.png}
+		\caption{\textbf{(a)} Upper-left: The Euler approximation of \(x = \sqrt{t}\) at different \(x_0\) values and at \(t_{\text{max}} = 50\). \textbf{(b)} Different \(x_0\) values at \(t_{\text{max}} = 100\). \textbf{(c)} Lower-left: Different \(x_0\) values at \(t_{\text{max}} = 500\), showing divergence at large \(t\). \textbf{(d)} Different \(x_0\) values at \(t_{\text{max}} = 1000\), showing complete breakdown of the approximation at high \(t\).}
+		\label{fig:E2_part2}
+	\end{figure}
+	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.6\textwidth]{E2_part_3.png}
+		\caption{The Euler approximation of \(x = \sqrt{t}\) at \(h = 0.01\) and \(t_{\text{max}} = 9\), showing improved accuracy compared to Figure~\ref{fig:E2_part1}.}
+		\label{fig:E2_part3}
+	\end{figure}
+	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.6\textwidth]{E2_part_4.png}
+		\caption{Iterative halving of \(h\) in the Euler approximation of \(x = \sqrt{t}\) at \(t_{\text{max}} = 100\).}
+		\label{fig:E2_part4}
+	\end{figure}
+	\clearpage
+	
+	\begin{table}[phtb]
+		\centering
+		\caption{Maximum change in the numerical solution between successive halvings of the step size~\(h\).}
+		\label{tab:stepsize_convergence}
+		\begin{tabular}{cc}
+			\toprule
+			{Step size \(h\)} & {Max.\ change from previous} \\
+			\midrule
+			0.02500 & \(7.98 \times 10^{-3}\) \\
+			0.01250 & \(3.88 \times 10^{-3}\) \\
+			0.00625 & \(1.91 \times 10^{-3}\) \\
+			0.00313 & \(9.48 \times 10^{-4}\) \\
+			0.00156 & \(4.72 \times 10^{-4}\) \\
+			0.00078 & \(2.36 \times 10^{-4}\) \\
+			0.00039 & \(1.18 \times 10^{-4}\) \\
+			0.00020 & \(5.89 \times 10^{-5}\) \\
+			0.00010 & \(2.94 \times 10^{-5}\) \\
+			\bottomrule
+		\end{tabular}
+	\end{table}
+	
+	\subsection{E3}
+	Figure~\ref{fig:E3_part1} shows the Euler approximation of the simple harmonic oscillator for several step sizes. Larger \(h\) produces a spurious amplitude growth due to accumulated error from truncating the Taylor series.
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.6\textwidth]{E3_part_1.png}
+		\caption{\textbf{(a)} Upper: The approximation of a Simple Harmonic Oscillator (SHO) using the Euler method with differing \(h\); the exact solution is plotted as a black dotted line. \textbf{(b)} Lower: The difference between the exact solution and the differing values of \(h\).}
+		\label{fig:E3_part1}
+	\end{figure}
+	\clearpage
+	
+	\subsection{E4}
+	Figure~\ref{fig:E4_part1} shows the same oscillator solved with the modified Euler method. The amplitude growth is significantly reduced compared to Figure~\ref{fig:E3_part1}, demonstrating improved accuracy.
+	\begin{figure}[!hbp]
+		\centering
+		\includegraphics[width=0.7\textwidth]{E4_part_1.png}
+		\caption{\textbf{(a)} Upper: The approximation of a Simple Harmonic Oscillator (SHO) using the modified Euler method with differing \(h\); the exact solution is plotted as a black dotted line. \textbf{(b)} Lower: The difference between the exact solution and the differing values of \(h\).}
+		\label{fig:E4_part1}
+	\end{figure}
+	\clearpage
+	\subsection{R1}
+	Figure~\ref{fig:R1_part1} shows the RK45 solution of the nonlinear ODE \(\dot{y} = -ay^3 + b\sin(t)\) for varying \(a\) and \(b\). The oscillatory behaviour is captured accurately.
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.9\textwidth]{R1_part_1.png}
+		\caption{The approximation of the nonlinear ODE \(\dot{y} = -ay^3 + b\sin(t)\) using the Runge-Kutta method, with solutions for varying \(a\) and \(b\).}
+		\label{fig:R1_part1}
+	\end{figure}
+	\clearpage
+	\subsection{R2}
+	Figure~\ref{fig:R2_part1} shows the curve of the RL circuit current as \(h\) decreases.
+	Figures~\ref{fig:R2_part2} and~\ref{fig:R2_part3} show that increasing \(R\) reduces the time constant \(\tau = L/R\), while increasing \(V\) raises the steady-state current proportionally.
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.8\textwidth]{R2_part_1.png}
+		\caption{\textbf{(a)} Upper: Runge-Kutta approximation of \(I(t)\) in an RL circuit for \(V = 10\)~V, \(R = 50~\Omega\), \(L = 100\)~H, at step sizes \(h = 0.5,\, 0.1,\, 0.01\); the exact solution (\ref{I(t)exact}) is plotted as a black dashed line. \textbf{(b)} Lower: The difference \(\Delta I\) showing the error decreasing as \(h\) is reduced.}
+		\label{fig:R2_part1}
+	\end{figure}
+	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.8\textwidth]{R2_part_2.png}
+		\caption{Runge-Kutta approximation of \(I(t)\) in an RL circuit at \(V = 10\)~V, \(L = 100\)~H, \(h = 0.01\), for varying resistance \(R = 25,\, 50,\, 100~\Omega\); the exact solution for each \(R\) is plotted as a faint black dashed line.}
+		\label{fig:R2_part2}
+	\end{figure}
+	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.8\textwidth]{R2_part_3.png}
+		\caption{Runge-Kutta approximation of \(I(t)\) in an RL circuit at \(R = 50~\Omega\), \(L = 100\)~H, \(h = 0.01\), for varying voltage \(V = 5,\, 10,\, 20\)~V; the exact solution for each \(V\) is plotted as a faint black dashed line.}
+		\label{fig:R2_part3}
+	\end{figure}
+	\clearpage
+	
+	\subsection{R3}
+	Figure~\ref{fig:R3_part1} shows the time-dependency and phase space of an undamped SHO, with a circular orbit in phase space. Figure~\ref{fig:R3_part2} shows how varying \(\omega_0\), \(x_0\), and \(v_0\) alters the frequency, amplitude, and phase.
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.8\textwidth]{R3_part_1.png}
+		\caption{\textbf{(a)} Runge-Kutta (RK45) approximation of a simple harmonic oscillator, showing \(x(t)\) and \(v(t)\) against time; the exact solutions \(x = \sin(t)\) and \(v = \cos(t)\) are plotted as black dotted lines. \textbf{(b)} Phase space diagram of \(v\) versus \(x\), showing the circular orbit expected for an undamped SHO.}
+		\label{fig:R3_part1}
+	\end{figure}
+	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.9\textwidth]{R3_part_2.png}
+		\caption{\textbf{(a)} Runge-Kutta approximation of a SHO with \(x(t)\) plotted for different values of \(\omega_0\), \(x_0\), and \(v_0\). \textbf{(b)} Phase space diagram of \(v\) versus \(x\) for the same parameter sets, showing the different orbits traced out.}
+		\label{fig:R3_part2}
+	\end{figure}
+	\subsection{R4}
+	Figure~\ref{fig:R4_part1} shows the damped oscillator with an inward spiral in phase space. Figure~\ref{fig:R4_part2} compares underdamped, critically damped, and overdamped regimes.
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=1\textwidth]{R4_part_1.png}
+		\caption{\textbf{(a)} Left: Damped harmonic oscillator for \(x_0 = 0\), \(v_0 = 1\), \(b = 0.1\), \(\omega_0 = 1.0\), showing \(x(t)\) and \(v(t)\) over 50 time units. \textbf{(b)} Right: Phase space diagram of \(v\) versus \(x\) for the same case, showing an inward spiral.}
+		\label{fig:R4_part1}
+	\end{figure}
+	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=1\textwidth]{R4_part_2.png}
+		\caption{\textbf{(a)} Left: Time evolution \(x(t)\) of a damped harmonic oscillator for three damping regimes at \(\omega_0 = 1\): underdamped (\(b = 0.1\)), critically damped (\(b = 2.0\)), and overdamped (\(b = 5.0\)). \textbf{(b)} Right: Phase space diagram of \(v\) versus \(x\) for the same three regimes, showing the spiral (underdamped), the single fast approach to the origin (critically damped), and the slow non-oscillatory decay (overdamped).}
+		\label{fig:R4_part2}
+	\end{figure}
+	\clearpage
+	\subsection{R6}
+	Figure~\ref{fig:R6_part1} shows the driven oscillator oscillating nonlinearly.
+	Figure~\ref{fig:R6_part2} compares damping regimes, and Figure~\ref{fig:R6_part3} shows resonance curves for several damping coefficients.
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=1\textwidth]{R6_part_1.png}
+		\caption{\textbf{(a)} Left: Driven damped harmonic oscillator for \(x_0 = 0\), \(v_0 = 1\), \(b = 0.1\), \(\omega_0 = 1.2\), \(\omega_d = 1.0\), \(A = 1.0\), showing \(x(t)\) and \(v(t)\) over 50 time units. \textbf{(b)} Right: Phase space diagram of \(v\) versus \(x\) for the same case, showing a complex spiral.}
+		\label{fig:R6_part1}
+	\end{figure}
+	
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=1\textwidth]{R6_part_2.png}
+		\caption{\textbf{(a)} Left: Time evolution \(x(t)\) of a driven damped harmonic oscillator for three damping regimes at \(\omega_0 = 1.2\): underdamped (\(b = 0.1\)), critically damped (\(b = 2.4\)), and overdamped (\(b = 5.0\)). \textbf{(b)} Right: Phase space diagram of \(v\) versus \(x\) for the same three regimes, showing that the underdamped case has not stabilised after 50 time units while the critically and overdamped cases settle toward the origin.}
+		\label{fig:R6_part2}
+	\end{figure}
+	\clearpage
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=1\textwidth]{R6_part_3.png}
+		\caption{Resonance curves for \(A = 0.1\) and \(\omega_0 = 1.2\), showing the steady-state amplitude as a function of driving frequency \(\omega_d\) for several damping coefficients \(b\).}
+		\label{fig:R6_part3}
+	\end{figure}
+	\clearpage
+	
+	\subsection{R7}
+	Figure~\ref{fig:R7_part1} shows a single resonance curve for \(b = 0.1\). The peak occurs near \(\omega_d = \omega_0 = 1.2\), with rapid fall-off away from resonance.
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.9\textwidth]{R7_part_3.png}
+		\caption{Resonance curve of a driven damped harmonic oscillator for \(A=0.1\), \(\omega_0=1.2\), and \(b=0.1\).}
+		\label{fig:R7_part1}
+	\end{figure}
+	\clearpage
+	\subsection{R8}
+	Figure~\ref{fig:R8_part1} shows resonance curves for five damping coefficients. As \(b\) decreases, the resonance peak becomes sharper and reaches a higher maximum amplitude.
+	\begin{figure}[!htbp]
+		\centering
+		\includegraphics[width=0.9\textwidth]{R8_part_1.png}
+		\caption{Resonance curves of a driven damped harmonic oscillator for \(A=0.1\) and \(\omega_0=1.2\), with varying damping coefficients (\(b\)). The plot demonstrates that as the damping coefficient \(b\) decreases, the resonance peak becomes sharper and reaches a higher maximum amplitude.}
+		\label{fig:R8_part1}
+	\end{figure}
+	\clearpage
+	\section{Discussion}
+	\subsection*{Euler Method (E1-E2)}
+	In Program E1, the Euler approximation of radioactive decay converged toward the exact solution as \(\Delta t\) was reduced. The error plot shows a hump like curve that shows the largest deviation occurs at small t then drops.this shows us where the slope change of the exponential is greatest as This is consistent with the first order accuracy of the Euler method because it can only do so much work with a single rate of change it cant predict large steps well.
+	
+	In Program E2, the non-linear equation \(\frac{dx}{dt} = t - x^2\) was solved for several initial conditions and integration times. At small \(t_{\text{max}}\), all curves converged toward \(x = \sqrt{t}\) at low t which leaves a interesting pattern
+	However, at \(t_{\text{max}} = 500\) and \(1000\), the solution diverges and eventually became chaotic. This is not a property of \(x = \sqrt{t}\), which remains still and smooth so this must be a breakdown of the Euler method or the code after careful examination with the code it was found that the error was due to the cutting off of the Taylor series leading to a compounding errors.
+	Reducing the step size to \(h = 0.01\) delayed divergence but did not entirely remove it. the halving table shows us that the maximum change between solutions roughly halved each time \(h\) was halved.
+	
+	\subsection*{Modified Euler Method (E3-E4)}
+	Programs E3 and E4 solve the simple harmonic oscillator using the Euler and modified Euler methods. In E3 using the Euler method produced a weird growth in the oscillation amplitude that increased with time so it would continue to compound this sounds like the error from before. after looking it up this is a known error in the Euler method when it comes too oscillating systems
+	
+	moving on too E4 the modified Euler method it was found taht it reduced the amplitude growth error for the same step sizes. This is probably be because the predictor corrector approach averages the slope canceling the error but after comparing to the exact function there is still a tiny bit of error this is probaly due to a finite amount of steps being able to be achieved.
+	The difference plots gave evidence that the modified Euler method was more accurate longer than the simple Euler method.
+	
+	\subsection*{Runge-Kutta Method (R1-R8)}
+	The Runge-Kutta method (RK45 via SciPy's \texttt{solve\_ivp}) was good at producing very accurate solutions for all equations. In R1  the nonlinear ODE was solved for different values of \(a\) and \(b\) making a 3x2 matrix almost and the oscillating behavior was captured without visible error.
+	In R2 the RL circuit current converged to the exact solution even for relatively large step sizes (\(h = 0.5\)), demonstrating the superior accuracy of the RK45 method compared to Euler.
+	but in Figure~\ref{fig:R2_part1}(b) the plot jumps from \(0\) to \(-1.2\) and then back up, which seems inconsistent for the difference plot. i could not find weather this shape was accurate or not
+	
+	In R3 the undamped harmonic oscillator produced a almost perfect circular phase space orbit which shows us that the relationship between x and v were almost perfect. when Varying \(\omega_0\) it changed the oscillation frequency while varying \(x_0\) and \(v_0\) changed the amplitude and phase both which makes sense when you look at it in the context of the exact solution \(x(t) = A\sin(\omega_0 t + \phi)\). which shows this exact observation
+	
+	In R4 the damped harmonic oscillator was varied for three damping ways. The under damped (\(b = 0.1\)) showed the oscillations decreasing inward spiral in phase space. The critically damped case (\(b = 2.0\)) returned to a equilibrium as quickly as possible without oscillating.
+	The over damped case (\(b = 5.0\)) didn't return to equilibrium for a long time but ended up after a extended period of time. These results matched theoretical predictions.
+	
+	In R6 the driven damped oscillator reached a balance in oscillation after a transient period. The resonance curves in R6-R8 showed a  peak near \(\omega_d \approx \omega_0 = 1.2\), with the peak becoming sharper and taller as the damping coefficient \(b\) decreased. This is the same with the theoretical resonance amplitude formula
+	
+	\subsection*{Improvements}
+	The accuracy of the numerical solutions could be improved by:
+	\begin{itemize}
+		\item Using a smaller step size \(h\), at the cost of longer computation time.
+		\item Using a different method that automatically adjusts \(h\) based on the local error estimate.
+		\item For the resonance measurements, integrating for longer to ensure the transient has fully decayed before measuring the steady-state amplitude.
+	\end{itemize}
+	
+	Overall, the experiment successfully demonstrated the hierarchy of numerical methods: Euler is simple but inaccurate, modified Euler is more accurate but still limited, and Runge-Kutta is highly accurate and suitable for a wide range of problems.
+	
+\end{document}
